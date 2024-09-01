@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="InitiaFactories:jar">
+    <output-path>$PROJECT_DIR$/../../Minecraft Server/plugins</output-path>
+    <root id="archive" name="InitiaFactories.jar">
+      <element id="module-output" name="InitiaFactories" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,12 @@
+name: InitiaFactories
+version: '1.0.0'
+main: Xeocas.Factory
+depend: [WeaponMechanics]
+api-version: '1.20'
+load: STARTUP
+authors: [ Xeocas ]
+description: Factory Plugin For Initia!
+commands:
+  factorymenu:
+    description: Opens the factory Menu.
+    usage: /<command>

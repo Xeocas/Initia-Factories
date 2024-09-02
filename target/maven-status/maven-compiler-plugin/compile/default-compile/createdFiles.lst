@@ -1,11 +1,13 @@
 Xeocas\Listeners\FactoryProcessor.class
 Xeocas\Listeners\MenuListener.class
 Xeocas\Menu\PlayerMenuUtility.class
+Xeocas\Factory$2.class
 Xeocas\Factories\Weapons\AK47Factory.class
 Xeocas\Items\SteelItem.class
 Xeocas\Factory.class
 Xeocas\Listeners\FactoryInteractListener.class
 Xeocas\Commands\FactoryMenuCommand.class
+Xeocas\Factory$1.class
 Xeocas\Factories\Weapons\Kar98Factory.class
 Xeocas\Listeners\MultiblockListener.class
 Xeocas\Menu\Menu.class

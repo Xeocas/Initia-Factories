@@ -6,6 +6,7 @@ import Xeocas.Listeners.FactoryProcessor;
 import Xeocas.Listeners.MenuListener;
 import Xeocas.Listeners.MultiblockListener;
 import Xeocas.Menu.PlayerMenuUtility;
+import me.deecaad.weaponmechanics.WeaponMechanicsLoader;
 import me.deecaad.weaponmechanics.weapon.WeaponHandler;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -50,48 +51,38 @@ public final class Factory extends JavaPlugin {
         //registers command to open the menu
         getCommand("factorymenu").setExecutor(new FactoryMenuCommand());
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                waitForWeaponMechanics(multiblockListener);
-            }
-        }.runTaskLater(this, 20L); // Start checking after 1 tick
+        setupWeaponHandler();
 
         getServer().getScheduler().runTaskLater(this, factoryInteractListener::reapplyMetadata, 100L);
 
     }
 
-    private void waitForWeaponMechanics(MultiblockListener multiblockListener) {
+    private void setupWeaponHandler() {
+        try {
+            WeaponHandler weaponHandler = WeaponMechanics.getWeaponHandler(); // Directly access the static method
+            if (weaponHandler != null) {
+                // Initialize the FactoryProcessor with the WeaponHandler and register its events
+                MultiblockListener multiblockListener = new MultiblockListener(this);
+                FactoryProcessor factoryProcessor = new FactoryProcessor(multiblockListener, weaponHandler);
+                getServer().getPluginManager().registerEvents(factoryProcessor, this);
+                getLogger().info("FactoryProcessor initialized successfully.");
+            } else {
+                throw new IllegalStateException("WeaponHandler is null.");
+            }
+        } catch (Exception e) {
+            getLogger().warning("Failed to initialize WeaponHandler: " + e.getMessage());
+            retrySetupWeaponHandler();
+        }
+    }
+
+    private void retrySetupWeaponHandler() {
         new BukkitRunnable() {
             @Override
             public void run() {
-                Plugin weaponMechanicsPlugin = getServer().getPluginManager().getPlugin("WeaponMechanics");
-                if (weaponMechanicsPlugin == null) {
-                    getLogger().warning("WeaponMechanics plugin is not found. Retrying...");
-                    waitForWeaponMechanics(multiblockListener); // Retry if WeaponMechanics is not found
-                    return;
-                }
-
-                if (weaponMechanicsPlugin instanceof WeaponMechanics) {
-                    WeaponMechanics weaponMechanics = (WeaponMechanics) weaponMechanicsPlugin;
-                    WeaponHandler weaponHandler = weaponMechanics.getWeaponHandler();
-                    if (weaponHandler != null) {
-                        // Initialize FactoryProcessor with correct parameters
-                        FactoryProcessor factoryProcessor = new FactoryProcessor(multiblockListener, weaponHandler);
-                        getServer().getPluginManager().registerEvents(factoryProcessor, Factory.this);
-                        getLogger().info("FactoryProcessor initialized successfully.");
-                    } else {
-                        getLogger().warning("WeaponHandler is not available. Retrying...");
-                        waitForWeaponMechanics(multiblockListener); // Retry if WeaponHandler is not ready
-                    }
-                } else {
-                    getLogger().warning("WeaponMechanics plugin is not of expected type. Retrying...");
-                    waitForWeaponMechanics(multiblockListener); // Retry if WeaponMechanics is not the correct type
-                }
+                setupWeaponHandler();  // Retry the setup
             }
-        }.runTaskLater(this, 20L); // Retry every 1 tick
+        }.runTaskLater(this, 20L); // Retry after 1 second
     }
-
 
 
     @Override

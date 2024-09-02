@@ -1,7 +1,6 @@
 Xeocas\Listeners\FactoryProcessor.class
 Xeocas\Listeners\MenuListener.class
 Xeocas\Menu\PlayerMenuUtility.class
-Xeocas\Factory$2.class
 Xeocas\Factories\Weapons\AK47Factory.class
 Xeocas\Items\SteelItem.class
 Xeocas\Factory.class

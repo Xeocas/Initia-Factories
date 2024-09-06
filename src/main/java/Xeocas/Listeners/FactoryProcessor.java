@@ -1,19 +1,16 @@
 package Xeocas.Listeners;
 
-import me.deecaad.weaponmechanics.WeaponMechanics;
 import me.deecaad.weaponmechanics.weapon.WeaponHandler;
-import me.deecaad.weaponmechanics.weapon.info.InfoHandler;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,24 +20,16 @@ public class FactoryProcessor implements Listener {
 	private static final long COOLDOWN_TIME = 10 * 1000; // 5 minutes in milliseconds
 	private final Map<Player, Long> lastConversionTime = new HashMap<>();
 	private final MultiblockListener multiblockListener;
-	private final InfoHandler weaponMechanicsInfoHandler;
+	private final WeaponHandler weaponHandler;
 
-	public FactoryProcessor(MultiblockListener multiblockListener, Plugin plugin) {
+	public FactoryProcessor(MultiblockListener multiblockListener, WeaponHandler weaponHandler) {
 		this.multiblockListener = multiblockListener;
-
-		// Ensure WeaponMechanics is loaded and available
-		WeaponHandler weaponHandler = WeaponMechanics.getWeaponHandler();
-		if (weaponHandler == null) {
-			plugin.getLogger().severe("WeaponMechanics plugin is not available. Disabling plugin.");
-			plugin.getServer().getPluginManager().disablePlugin(plugin);
-			throw new IllegalStateException("WeaponMechanics plugin is not available");
-		}
-		this.weaponMechanicsInfoHandler = weaponHandler.getInfoHandler();
+		this.weaponHandler = weaponHandler;
 	}
 
 	@EventHandler
 	public void onRightClick(PlayerInteractEvent e) {
-		if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+		if (e.getAction() == Action.RIGHT_CLICK_BLOCK) { // Use the Action enum from org.bukkit.event.block.Action
 			Block block = e.getClickedBlock();
 			Player player = e.getPlayer();
 
@@ -103,14 +92,8 @@ public class FactoryProcessor implements Listener {
 				removeItems(inventory, Material.DIAMOND, 1, player);
 				removeItems(inventory, Material.GOLD_INGOT, 1, player);
 
-				String weaponTitle = weaponMechanicsInfoHandler.getWeaponTitle("Kar98k");
+				String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("Kar98k");
 				if (weaponTitle != null) {
-<<<<<<< Updated upstream
-					ItemStack kar98kWeapon = weaponMechanicsInfoHandler.generateWeapon(weaponTitle, 1);
-					inventory.addItem(kar98kWeapon);
-					conversionSuccess = true;
-					player.sendMessage("Kar98k generated successfully.");
-=======
 					ItemStack kar98kWeapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
 					if (kar98kWeapon != null) {
 						inventory.addItem(kar98kWeapon);
@@ -119,7 +102,6 @@ public class FactoryProcessor implements Listener {
 					} else {
 						player.sendMessage("Failed to generate Kar98k weapon.");
 					}
->>>>>>> Stashed changes
 				} else {
 					player.sendMessage("Kar98k weapon title not found.");
 				}
@@ -135,14 +117,8 @@ public class FactoryProcessor implements Listener {
 				removeItems(inventory, Material.DIAMOND, 1, player);
 				removeItems(inventory, Material.EMERALD, 1, player);
 
-				String weaponTitle = weaponMechanicsInfoHandler.getWeaponTitle("AK47");
+				String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("AK47");
 				if (weaponTitle != null) {
-<<<<<<< Updated upstream
-					ItemStack ak47Weapon = weaponMechanicsInfoHandler.generateWeapon(weaponTitle, 1);
-					inventory.addItem(ak47Weapon);
-					conversionSuccess = true;
-					player.sendMessage("AK47 generated successfully.");
-=======
 					ItemStack ak47Weapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
 					if (ak47Weapon != null) {
 						inventory.addItem(ak47Weapon);
@@ -151,7 +127,6 @@ public class FactoryProcessor implements Listener {
 					} else {
 						player.sendMessage("Failed to generate AK47 weapon.");
 					}
->>>>>>> Stashed changes
 				} else {
 					player.sendMessage("AK47 weapon title not found.");
 				}
@@ -200,5 +175,4 @@ public class FactoryProcessor implements Listener {
 			if (remaining <= 0) break;
 		}
 	}
-
 }

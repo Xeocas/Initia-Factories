@@ -63,6 +63,7 @@ public class FactoryInteractListener implements Listener {
                 String blockKey = getBlockKey(block);
                 blockMetadataMap.put(blockKey, factoryType);
                 saveMetadata();
+                block.getState().update(true, false);
                 plugin.getLogger().info("Placed a " + factoryType + " factory block at " + blockKey);
             }
         }
@@ -73,6 +74,7 @@ public class FactoryInteractListener implements Listener {
         Block block = event.getBlock();
         String blockKey = getBlockKey(block);
 
+        // Check if the block has metadata
         if (block.hasMetadata("factory_type")) {
             MetadataValue metadataValue = block.getMetadata("factory_type").get(0);
             String factoryType = metadataValue.asString();
@@ -83,23 +85,18 @@ public class FactoryInteractListener implements Listener {
             dataConfig.set("factories." + blockKey, null);
             saveMetadata();
 
-            // Create the correct item based on the factory type
-            ItemStack item;
-            if ("Kar98".equals(factoryType)) {
-                item = Kar98Factory.CreateFactoryBlock();
-            } else if ("AK47".equals(factoryType)) {
-                item = AK47Factory.CreateFactoryBlock();
-            } else {
-                item = new ItemStack(Material.AIR); // Fallback to avoid errors
-            }
+            block.setType(Material.AIR);
+            // Log for debugging
+            plugin.getLogger().info("Factory block broken at " + blockKey + ". Dropped item: " + factoryType);
 
-            // Drop the item at the block's location and prevent default block drops
-            block.getWorld().dropItemNaturally(block.getLocation(), item);
-            event.setDropItems(false); // Prevent default drops
-
-            plugin.getLogger().info("Broken a " + factoryType + " factory block at " + blockKey);
+            event.setDropItems(false);
+        } else {
+            // No factory metadata, handle as a normal block break
+            plugin.getLogger().info("Block at " + blockKey + " is not a factory block.");
         }
     }
+
+
 
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
@@ -157,6 +154,8 @@ public class FactoryInteractListener implements Listener {
             }
         }
     }
+
+
 
     private String getBlockKey(Block block) {
         return block.getWorld().getName() + "_" + block.getX() + "_" + block.getY() + "_" + block.getZ();

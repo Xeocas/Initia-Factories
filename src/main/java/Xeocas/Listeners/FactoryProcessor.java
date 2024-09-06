@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class FactoryProcessor implements Listener {
 
-	private static final long COOLDOWN_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
+	private static final long COOLDOWN_TIME = 10 * 1000; // 5 minutes in milliseconds
 	private final Map<Player, Long> lastConversionTime = new HashMap<>();
 	private final MultiblockListener multiblockListener;
 	private final InfoHandler weaponMechanicsInfoHandler;
@@ -52,7 +52,10 @@ public class FactoryProcessor implements Listener {
 					if (canConvert(player)) {
 						convertItemsInChest(block, player);
 					} else {
-						player.sendMessage("You must wait 5 minutes before converting items again.");
+						long remainingCooldown = COOLDOWN_TIME - (System.currentTimeMillis() - lastConversionTime.get(player));
+						long minutes = (remainingCooldown / 1000) / 60;
+						long seconds = (remainingCooldown / 1000) % 60;
+						player.sendMessage("You must wait " + minutes + " minutes and " + seconds + " seconds before converting items again.");
 					}
 				} else {
 					player.sendMessage("Multiblock structure is not complete.");
@@ -93,19 +96,30 @@ public class FactoryProcessor implements Listener {
 			// Check for Kar98k factory conversion
 			if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
 					itemsContain(items, Material.DIAMOND, 1, player) &&
-					itemsContain(items, Material.GOLD_ORE, 1, player)) {
+					itemsContain(items, Material.GOLD_INGOT, 1, player)) {
 
 				// Conversion for Kar98k factory
 				removeItems(inventory, Material.IRON_INGOT, 3, player);
 				removeItems(inventory, Material.DIAMOND, 1, player);
-				removeItems(inventory, Material.GOLD_ORE, 1, player);
+				removeItems(inventory, Material.GOLD_INGOT, 1, player);
 
 				String weaponTitle = weaponMechanicsInfoHandler.getWeaponTitle("Kar98k");
 				if (weaponTitle != null) {
+<<<<<<< Updated upstream
 					ItemStack kar98kWeapon = weaponMechanicsInfoHandler.generateWeapon(weaponTitle, 1);
 					inventory.addItem(kar98kWeapon);
 					conversionSuccess = true;
 					player.sendMessage("Kar98k generated successfully.");
+=======
+					ItemStack kar98kWeapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
+					if (kar98kWeapon != null) {
+						inventory.addItem(kar98kWeapon);
+						conversionSuccess = true;
+						player.sendMessage("Kar98k generated successfully.");
+					} else {
+						player.sendMessage("Failed to generate Kar98k weapon.");
+					}
+>>>>>>> Stashed changes
 				} else {
 					player.sendMessage("Kar98k weapon title not found.");
 				}
@@ -123,10 +137,21 @@ public class FactoryProcessor implements Listener {
 
 				String weaponTitle = weaponMechanicsInfoHandler.getWeaponTitle("AK47");
 				if (weaponTitle != null) {
+<<<<<<< Updated upstream
 					ItemStack ak47Weapon = weaponMechanicsInfoHandler.generateWeapon(weaponTitle, 1);
 					inventory.addItem(ak47Weapon);
 					conversionSuccess = true;
 					player.sendMessage("AK47 generated successfully.");
+=======
+					ItemStack ak47Weapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
+					if (ak47Weapon != null) {
+						inventory.addItem(ak47Weapon);
+						conversionSuccess = true;
+						player.sendMessage("AK47 generated successfully.");
+					} else {
+						player.sendMessage("Failed to generate AK47 weapon.");
+					}
+>>>>>>> Stashed changes
 				} else {
 					player.sendMessage("AK47 weapon title not found.");
 				}
@@ -143,6 +168,7 @@ public class FactoryProcessor implements Listener {
 			player.sendMessage("There must be a chest on top of the factory block.");
 		}
 	}
+
 
 	// Updated item check with debug messages
 	private boolean itemsContain(ItemStack[] items, Material material, int count, Player player) {

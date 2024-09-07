@@ -13,21 +13,16 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import me.deecaad.weaponmechanics.WeaponMechanics;
-import me.deecaad.weaponmechanics.weapon.WeaponHandler;
 
 import java.util.HashMap;
 
 public final class Factory extends JavaPlugin {
 
-    //hash map to store menu
     private static final HashMap<Player, PlayerMenuUtility> playerMenuUtilityMap = new HashMap<>();
 
     @Override
     public void onEnable() {
-
-
-        // Plugin startup logic
-        System.out.println("Factories!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("Factories Initialized");
 
         Plugin weaponMechanicsPlugin = getServer().getPluginManager().getPlugin("WeaponMechanics");
         if (weaponMechanicsPlugin == null) {
@@ -36,32 +31,33 @@ public final class Factory extends JavaPlugin {
             getLogger().info("WeaponMechanics plugin found: " + weaponMechanicsPlugin.getDescription().getVersion());
         }
 
-
         FactoryInteractListener factoryInteractListener = new FactoryInteractListener(this);
-        //registers factorylistener for right click
         getServer().getPluginManager().registerEvents(factoryInteractListener, this);
 
-        //registers menulistener
         getServer().getPluginManager().registerEvents(new MenuListener(), this);
 
-        //register multiblock listener
         MultiblockListener multiblockListener = new MultiblockListener(this);
         getServer().getPluginManager().registerEvents(multiblockListener, this);
 
-        //registers command to open the menu
         getCommand("factorymenu").setExecutor(new FactoryMenuCommand());
 
         setupWeaponHandler();
 
-        getServer().getScheduler().runTaskLater(this, factoryInteractListener::reapplyMetadata, 100L);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                factoryInteractListener.reapplyMetadata();
+            }
+        }.runTaskTimer(this, 0L, 1200L);
+
 
     }
 
     private void setupWeaponHandler() {
         try {
-            WeaponHandler weaponHandler = WeaponMechanics.getWeaponHandler(); // Directly access the static method
+            WeaponHandler weaponHandler = WeaponMechanics.getWeaponHandler();
             if (weaponHandler != null) {
-                // Initialize the FactoryProcessor with the WeaponHandler and register its events
                 MultiblockListener multiblockListener = new MultiblockListener(this);
                 FactoryProcessor factoryProcessor = new FactoryProcessor(multiblockListener, weaponHandler);
                 getServer().getPluginManager().registerEvents(factoryProcessor, this);
@@ -79,31 +75,17 @@ public final class Factory extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
-                setupWeaponHandler();  // Retry the setup
+                setupWeaponHandler();
             }
-        }.runTaskLater(this, 20L); // Retry after 1 second
+        }.runTaskLater(this, 20L);
     }
-
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
-        System.out.println("Factories over");
+        System.out.println("Factories Disabled");
     }
 
-    //menu utility
     public static PlayerMenuUtility getPlayerMenuUtility(Player p) {
-        PlayerMenuUtility playerMenuUtility;
-
-        if(playerMenuUtilityMap.containsKey(p)){
-            return playerMenuUtilityMap.get(p);
-        }
-        else {
-            playerMenuUtility = new PlayerMenuUtility(p);
-            playerMenuUtilityMap.put(p, playerMenuUtility);
-
-            return playerMenuUtility;
-        }
+        return playerMenuUtilityMap.computeIfAbsent(p, PlayerMenuUtility::new);
     }
-
 }

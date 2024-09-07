@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,6 @@ public class FactoryInteractListener implements Listener {
     private File dataFile;
     private final Map<String, String> blockMetadataMap = new HashMap<>();
 
-    // Constants for display names
     private static final String KAR98_DISPLAY_NAME = Kar98Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
     private static final String AK47_DISPLAY_NAME = AK47Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
 
@@ -38,8 +38,6 @@ public class FactoryInteractListener implements Listener {
         this.dataFile = new File(plugin.getDataFolder(), "factories.yml");
         this.dataConfig = YamlConfiguration.loadConfiguration(dataFile);
         loadMetadata();
-        // Schedule reapplyMetadata to run after server startup
-        plugin.getServer().getScheduler().runTask(plugin, this::reapplyMetadata);
     }
 
     @EventHandler
@@ -50,22 +48,30 @@ public class FactoryInteractListener implements Listener {
 
         if (meta != null && meta.hasDisplayName()) {
             String displayName = meta.getDisplayName();
-            String factoryType = "";
-
-            if (displayName.equals(KAR98_DISPLAY_NAME)) {
-                factoryType = "Kar98";
-            } else if (displayName.equals(AK47_DISPLAY_NAME)) {
-                factoryType = "AK47";
-            }
+            String factoryType = getFactoryType(displayName);
 
             if (!factoryType.isEmpty()) {
+                // Apply metadata
                 block.setMetadata("factory_type", new FixedMetadataValue(plugin, factoryType));
+
+                // Schedule a task to ensure metadata is applied
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        block.getState().update(true, false);
+                    }
+                }.runTask(plugin);
+
                 String blockKey = getBlockKey(block);
                 blockMetadataMap.put(blockKey, factoryType);
                 saveMetadata();
-                block.getState().update(true, false);
-                plugin.getLogger().info("Placed a " + factoryType + " factory block at " + blockKey);
+
+                plugin.getLogger().info("Placed a " + factoryType + " factory block at " + block.getLocation());
+            } else {
+                plugin.getLogger().warning("Unknown factory type for display name: " + displayName);
             }
+        } else {
+            plugin.getLogger().warning("No item meta found or display name missing for item: " + item.getType());
         }
     }
 
@@ -74,41 +80,33 @@ public class FactoryInteractListener implements Listener {
         Block block = event.getBlock();
         String blockKey = getBlockKey(block);
 
-        // Check if the block has metadata
         if (block.hasMetadata("factory_type")) {
             MetadataValue metadataValue = block.getMetadata("factory_type").get(0);
             String factoryType = metadataValue.asString();
 
-            // Remove the metadata from the block
             block.removeMetadata("factory_type", plugin);
             blockMetadataMap.remove(blockKey);
             dataConfig.set("factories." + blockKey, null);
             saveMetadata();
 
             block.setType(Material.AIR);
-            // Log for debugging
             plugin.getLogger().info("Factory block broken at " + blockKey + ". Dropped item: " + factoryType);
 
             event.setDropItems(false);
         } else {
-            // No factory metadata, handle as a normal block break
             plugin.getLogger().info("Block at " + blockKey + " is not a factory block.");
         }
     }
 
-
-
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
-        // Check if any of the items in the crafting grid are factory blocks
         for (ItemStack item : event.getInventory().getMatrix()) {
             if (item != null && item.hasItemMeta()) {
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null && meta.hasDisplayName()) {
                     String displayName = meta.getDisplayName();
                     if (displayName.equals(KAR98_DISPLAY_NAME) || displayName.equals(AK47_DISPLAY_NAME)) {
-                        // Prevent crafting if a factory block is present
-                        event.getInventory().setResult(new ItemStack(Material.AIR)); // Cancel the crafting
+                        event.getInventory().setResult(new ItemStack(Material.AIR));
                         plugin.getLogger().info("Cancelled crafting involving factory block with display name: " + displayName);
                         break;
                     }
@@ -117,7 +115,6 @@ public class FactoryInteractListener implements Listener {
         }
     }
 
-    // Method to reapply metadata to blocks on server startup
     public void reapplyMetadata() {
         plugin.getLogger().info("Reapplying metadata to blocks...");
 
@@ -125,7 +122,6 @@ public class FactoryInteractListener implements Listener {
             String key = entry.getKey();
             String factoryType = entry.getValue();
 
-            // Split the key to get world name and coordinates
             String[] parts = key.split("_");
             if (parts.length == 4) {
                 String worldName = parts[0];
@@ -133,16 +129,21 @@ public class FactoryInteractListener implements Listener {
                 int y = Integer.parseInt(parts[2]);
                 int z = Integer.parseInt(parts[3]);
 
-                // Get the world and block
                 org.bukkit.World world = plugin.getServer().getWorld(worldName);
                 if (world != null) {
                     Block block = world.getBlockAt(x, y, z);
-
-                    // Ensure the block is of the correct type and reapply metadata
-                    if ((factoryType.equals("Kar98") && block.getType() == Material.IRON_BLOCK) ||
-                            (factoryType.equals("AK47") && block.getType() == Material.GOLD_BLOCK)) {
+                    if (block.getType() == getFactoryBlockType(factoryType)) {
                         block.setMetadata("factory_type", new FixedMetadataValue(plugin, factoryType));
-                        plugin.getLogger().info("Reapplied metadata " + factoryType + " to block at " + key);
+
+                        // Schedule a task to ensure metadata is applied
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                block.getState().update(true, false);
+                            }
+                        }.runTask(plugin);
+
+                        plugin.getLogger().info("Reapplied metadata to block at " + key);
                     } else {
                         plugin.getLogger().warning("Skipping block at " + key + " due to incorrect type.");
                     }
@@ -155,7 +156,25 @@ public class FactoryInteractListener implements Listener {
         }
     }
 
+    private String getFactoryType(String displayName) {
+        if (displayName.equals(KAR98_DISPLAY_NAME)) {
+            return "Kar98";
+        } else if (displayName.equals(AK47_DISPLAY_NAME)) {
+            return "AK47";
+        }
+        return "";
+    }
 
+    private Material getFactoryBlockType(String factoryType) {
+        switch (factoryType) {
+            case "Kar98":
+                return Material.IRON_BLOCK;
+            case "AK47":
+                return Material.GOLD_BLOCK;
+            default:
+                return Material.AIR;
+        }
+    }
 
     private String getBlockKey(Block block) {
         return block.getWorld().getName() + "_" + block.getX() + "_" + block.getY() + "_" + block.getZ();

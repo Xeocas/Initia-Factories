@@ -1,6 +1,8 @@
 package Xeocas.Listeners;
 
 import me.deecaad.weaponmechanics.weapon.WeaponHandler;
+import me.deecaad.weaponmechanics.weapon.reload.ammo.IAmmoType;
+import me.deecaad.weaponmechanics.weapon.reload.ammo.ItemAmmo;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -11,9 +13,12 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import me.deecaad.weaponmechanics.weapon.reload.ammo.Ammo;
+import me.deecaad.weaponmechanics.weapon.reload.ammo.AmmoRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
+
 public class FactoryProcessor implements Listener {
 
 	private static final long COOLDOWN_TIME = 10 * 1000; // 10 seconds in milliseconds
@@ -48,8 +53,6 @@ public class FactoryProcessor implements Listener {
 				} else {
 					player.sendMessage("Multiblock structure is not complete.");
 				}
-			} else {
-				player.sendMessage("No factory type metadata found on block.");
 			}
 		}
 	}
@@ -84,56 +87,22 @@ public class FactoryProcessor implements Listener {
 			// Get the factory type from the block metadata
 			String factoryType = centerBlock.getMetadata("factory_type").get(0).asString();
 
-			if ("Kar98".equals(factoryType)) {
-				// Check for Kar98k factory conversion
-				if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
-						itemsContain(items, Material.DIAMOND, 1, player) &&
-						itemsContain(items, Material.GOLD_INGOT, 1, player)) {
-
-					// Conversion for Kar98k factory
-					removeItems(inventory, Material.IRON_INGOT, 3, player);
-					removeItems(inventory, Material.DIAMOND, 1, player);
-					removeItems(inventory, Material.GOLD_INGOT, 1, player);
-
-					String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("Kar98k");
-					if (weaponTitle != null) {
-						ItemStack kar98kWeapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
-						if (kar98kWeapon != null) {
-							inventory.addItem(kar98kWeapon);
-							conversionSuccess = true;
-							player.sendMessage("Kar98k generated successfully.");
-						} else {
-							player.sendMessage("Failed to generate Kar98k weapon.");
-						}
-					} else {
-						player.sendMessage("Kar98k weapon title not found.");
-					}
-				}
-			} else if ("AK47".equals(factoryType)) {
-				// Check for AK47 factory conversion
-				if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
-						itemsContain(items, Material.DIAMOND, 1, player) &&
-						itemsContain(items, Material.EMERALD, 1, player)) {
-
-					// Conversion for AK47 factory
-					removeItems(inventory, Material.IRON_INGOT, 3, player);
-					removeItems(inventory, Material.DIAMOND, 1, player);
-					removeItems(inventory, Material.EMERALD, 1, player);
-
-					String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("AK47");
-					if (weaponTitle != null) {
-						ItemStack ak47Weapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
-						if (ak47Weapon != null) {
-							inventory.addItem(ak47Weapon);
-							conversionSuccess = true;
-							player.sendMessage("AK47 generated successfully.");
-						} else {
-							player.sendMessage("Failed to generate AK47 weapon.");
-						}
-					} else {
-						player.sendMessage("AK47 weapon title not found.");
-					}
-				}
+			switch (factoryType) {
+				case "Kar98":
+					conversionSuccess = handleKar98Conversion(items, inventory, player);
+					break;
+				case "AK47":
+					conversionSuccess = handleAK47Conversion(items, inventory, player);
+					break;
+				case "Mauser":
+					conversionSuccess = handleMauserConversion(items, inventory, player);
+					break;
+				case "Ammo762":
+					conversionSuccess = handleAmmo762Conversion(items, inventory, player);
+					break;
+				default:
+					player.sendMessage("Unknown factory type: " + factoryType);
+					break;
 			}
 
 			if (conversionSuccess) {
@@ -147,7 +116,109 @@ public class FactoryProcessor implements Listener {
 		}
 	}
 
-	// Updated item check with debug messages
+	private boolean handleKar98Conversion(ItemStack[] items, Inventory inventory, Player player) {
+		if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
+				itemsContain(items, Material.DIAMOND, 1, player) &&
+				itemsContain(items, Material.GOLD_INGOT, 1, player)) {
+
+			removeItems(inventory, Material.IRON_INGOT, 3, player);
+			removeItems(inventory, Material.DIAMOND, 1, player);
+			removeItems(inventory, Material.GOLD_INGOT, 1, player);
+
+			String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("Kar98k");
+			return generateWeapon(inventory, weaponTitle, player);
+		}
+		return false;
+	}
+
+	private boolean handleAK47Conversion(ItemStack[] items, Inventory inventory, Player player) {
+		if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
+				itemsContain(items, Material.DIAMOND, 1, player) &&
+				itemsContain(items, Material.EMERALD, 1, player)) {
+
+			removeItems(inventory, Material.IRON_INGOT, 3, player);
+			removeItems(inventory, Material.DIAMOND, 1, player);
+			removeItems(inventory, Material.EMERALD, 1, player);
+
+			String weaponTitle = weaponHandler.getInfoHandler().getWeaponTitle("AK47");
+			return generateWeapon(inventory, weaponTitle, player);
+		}
+		return false;
+	}
+
+	private boolean handleMauserConversion(ItemStack[] items, Inventory inventory, Player player) {
+		if (itemsContain(items, Material.IRON_INGOT, 5, player) &&
+				itemsContain(items, Material.DIAMOND, 4, player) &&
+				itemsContain(items, Material.EMERALD, 2, player)) {
+
+			removeItems(inventory, Material.IRON_INGOT, 5, player);
+			removeItems(inventory, Material.DIAMOND, 4, player);
+			removeItems(inventory, Material.EMERALD, 2, player);
+
+			Ammo ammo = AmmoRegistry.AMMO_REGISTRY.get("mauser");
+			if (ammo != null) {
+				return generateAmmo(inventory, ammo, player);
+			} else {
+				player.sendMessage("Mauser ammo not found in AmmoRegistry.");
+			}
+		}
+		return false;
+	}
+
+	private boolean handleAmmo762Conversion(ItemStack[] items, Inventory inventory, Player player) {
+		if (itemsContain(items, Material.IRON_INGOT, 5, player) &&
+				itemsContain(items, Material.DIAMOND, 2, player) &&
+				itemsContain(items, Material.EMERALD, 2, player)) {
+
+			removeItems(inventory, Material.IRON_INGOT, 5, player);
+			removeItems(inventory, Material.DIAMOND, 2, player);
+			removeItems(inventory, Material.EMERALD, 2, player);
+
+			Ammo ammo = AmmoRegistry.AMMO_REGISTRY.get("7,62"); // Match this with the title in your 7,62.yml file
+
+			if (ammo != null) {
+				return generateAmmo(inventory, ammo, player);
+			} else {
+				player.sendMessage("7.62 ammo not found in AmmoRegistry.");
+			}
+		}
+		return false;
+	}
+
+	private boolean generateAmmo(Inventory inventory, Ammo ammo, Player player) {
+		IAmmoType ammoType = ammo.getType();
+		ItemStack ammoItem = null;
+
+		if (ammoType instanceof ItemAmmo) {
+			ammoItem = ((ItemAmmo) ammoType).getBulletItem(); // Adjust method based on actual class
+		}
+
+		if (ammoItem != null) {
+			inventory.addItem(ammoItem);
+			player.sendMessage(ammo.getDisplay() + " ammo generated successfully.");
+			return true;
+		} else {
+			player.sendMessage("Failed to generate ammo for " + ammo.getDisplay());
+		}
+		return false;
+	}
+
+	private boolean generateWeapon(Inventory inventory, String weaponTitle, Player player) {
+		if (weaponTitle != null) {
+			ItemStack weapon = weaponHandler.getInfoHandler().generateWeapon(weaponTitle, 1);
+			if (weapon != null) {
+				inventory.addItem(weapon);
+				player.sendMessage(weaponTitle + " generated successfully.");
+				return true;
+			} else {
+				player.sendMessage("Failed to generate " + weaponTitle + " weapon.");
+			}
+		} else {
+			player.sendMessage(weaponTitle + " weapon title not found.");
+		}
+		return false;
+	}
+
 	private boolean itemsContain(ItemStack[] items, Material material, int count, Player player) {
 		int total = 0;
 		for (ItemStack item : items) {
@@ -173,7 +244,6 @@ public class FactoryProcessor implements Listener {
 					break;
 				}
 			}
-			// Stop removing if all required items are removed
 			if (remaining <= 0) break;
 		}
 	}

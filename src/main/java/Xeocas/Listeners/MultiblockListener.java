@@ -1,6 +1,8 @@
 package Xeocas.Listeners;
 
 import Xeocas.Factories.Weapons.AK47Factory;
+import Xeocas.Factories.Weapons.Ammo762Factory;
+import Xeocas.Factories.Weapons.AmmoMauserFactory;
 import Xeocas.Factories.Weapons.Kar98Factory;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,8 +23,8 @@ public class MultiblockListener implements Listener {
     private final Plugin plugin;
     private static final String KAR98_DISPLAY_NAME = Kar98Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
     private static final String AK47_DISPLAY_NAME = AK47Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
-
-
+    private static final String AMMO762_DISPLAY_NAME = Ammo762Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
+    private static final String AMMOMAUSER_DISPLAY_NAME = AmmoMauserFactory.CreateFactoryBlock().getItemMeta().getDisplayName();
 
     public MultiblockListener(Plugin plugin) {
         this.plugin = plugin;
@@ -36,7 +38,7 @@ public class MultiblockListener implements Listener {
 
         if (meta != null && meta.hasDisplayName()) {
             String displayName = meta.getDisplayName();
-            if (displayName.equals(KAR98_DISPLAY_NAME) || displayName.equals(AK47_DISPLAY_NAME)) {
+            if (displayName.equals(KAR98_DISPLAY_NAME) || displayName.equals(AK47_DISPLAY_NAME) || displayName.equals(AMMO762_DISPLAY_NAME) || displayName.equals(AMMOMAUSER_DISPLAY_NAME)) {
                 block.setMetadata("factory_type", new FixedMetadataValue(plugin, displayName));
             }
         }
@@ -161,6 +163,10 @@ public class MultiblockListener implements Listener {
                 return Material.IRON_BLOCK; // Adjust if the material is different
             case "AK47":
                 return Material.GOLD_BLOCK; // Adjust if the material is different
+            case "Mauser":
+                return Material.IRON_BLOCK;
+            case "Ammo762":
+                return Material.IRON_BLOCK;
             default:
                 return null;
         }

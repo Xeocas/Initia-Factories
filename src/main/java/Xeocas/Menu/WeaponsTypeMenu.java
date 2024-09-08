@@ -1,6 +1,8 @@
 package Xeocas.Menu;
 
 import Xeocas.Factories.Weapons.AK47Factory;
+import Xeocas.Factories.Weapons.Ammo762Factory;
+import Xeocas.Factories.Weapons.AmmoMauserFactory;
 import Xeocas.Factories.Weapons.Kar98Factory;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -41,7 +43,15 @@ public class WeaponsTypeMenu extends Menu{
         AK47Factory ak47Factory = new AK47Factory();
         ItemStack ak47 = ak47Factory.CreateFactoryBlock();
 
+        Ammo762Factory ammo762Factory = new Ammo762Factory();
+        ItemStack ammo762 = ammo762Factory.CreateFactoryBlock();
+
+        AmmoMauserFactory ammoMauserFactory = new AmmoMauserFactory();
+        ItemStack ammomauser = ammoMauserFactory.CreateFactoryBlock();
+
         inventory.setItem(0, kar);
         inventory.setItem(1, ak47);
+        inventory.setItem(2, ammo762);
+        inventory.setItem(3, ammomauser);
     }
 }

@@ -4,7 +4,7 @@
   <groupId>Xeocas.Factory</groupId>
   <artifactId>InitiaFactories</artifactId>
   <name>InitiaFactories</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <build>
     <defaultGoal>clean package</defaultGoal>
     <resources>

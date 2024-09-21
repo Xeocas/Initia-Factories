@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class FactoryProcessor implements Listener {
 
-	private static final long COOLDOWN_TIME = 10 * 1000; // 10 seconds in milliseconds
+	private static final long COOLDOWN_TIME = 15 * 1000; // 10 seconds in milliseconds
 	private final Map<Block, Long> lastConversionTime = new HashMap<>();
 	private final MultiblockListener multiblockListener;
 	private final WeaponHandler weaponHandler;
@@ -91,15 +91,15 @@ public class FactoryProcessor implements Listener {
 				case "Kar98":
 					conversionSuccess = handleKar98Conversion(items, inventory, player);
 					break;
-				case "AK47":
-					conversionSuccess = handleAK47Conversion(items, inventory, player);
-					break;
+				//case "AK47":
+				//	conversionSuccess = handleAK47Conversion(items, inventory, player);
+				//	break;
 				case "Mauser":
 					conversionSuccess = handleMauserConversion(items, inventory, player);
 					break;
-				case "Ammo762":
-					conversionSuccess = handleAmmo762Conversion(items, inventory, player);
-					break;
+				//case "Ammo762":
+				//	conversionSuccess = handleAmmo762Conversion(items, inventory, player);
+				//	break;
 				default:
 					player.sendMessage("Unknown factory type: " + factoryType);
 					break;
@@ -130,7 +130,7 @@ public class FactoryProcessor implements Listener {
 		}
 		return false;
 	}
-
+/*
 	private boolean handleAK47Conversion(ItemStack[] items, Inventory inventory, Player player) {
 		if (itemsContain(items, Material.IRON_INGOT, 3, player) &&
 				itemsContain(items, Material.DIAMOND, 1, player) &&
@@ -145,7 +145,7 @@ public class FactoryProcessor implements Listener {
 		}
 		return false;
 	}
-
+*/
 	private boolean handleMauserConversion(ItemStack[] items, Inventory inventory, Player player) {
 		if (itemsContain(items, Material.IRON_INGOT, 5, player) &&
 				itemsContain(items, Material.DIAMOND, 4, player) &&
@@ -164,7 +164,7 @@ public class FactoryProcessor implements Listener {
 		}
 		return false;
 	}
-
+/*
 	private boolean handleAmmo762Conversion(ItemStack[] items, Inventory inventory, Player player) {
 		if (itemsContain(items, Material.IRON_INGOT, 5, player) &&
 				itemsContain(items, Material.DIAMOND, 2, player) &&
@@ -184,7 +184,7 @@ public class FactoryProcessor implements Listener {
 		}
 		return false;
 	}
-
+*/
 	private boolean generateAmmo(Inventory inventory, Ammo ammo, Player player) {
 		IAmmoType ammoType = ammo.getType();
 		ItemStack ammoItem = null;

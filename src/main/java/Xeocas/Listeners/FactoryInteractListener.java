@@ -33,8 +33,8 @@ public class FactoryInteractListener implements Listener {
     private final Map<String, String> blockMetadataMap = new HashMap<>();
 
     private static final String KAR98_DISPLAY_NAME = Kar98Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
-    private static final String AK47_DISPLAY_NAME = AK47Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
-    private static final String AMMO762_DISPLAY_NAME = Ammo762Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
+   // private static final String AK47_DISPLAY_NAME = AK47Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
+    //private static final String AMMO762_DISPLAY_NAME = Ammo762Factory.CreateFactoryBlock().getItemMeta().getDisplayName();
     private static final String AMMOMAUSER_DISPLAY_NAME = AmmoMauserFactory.CreateFactoryBlock().getItemMeta().getDisplayName();
 
     public FactoryInteractListener(JavaPlugin plugin) {
@@ -109,7 +109,8 @@ public class FactoryInteractListener implements Listener {
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null && meta.hasDisplayName()) {
                     String displayName = meta.getDisplayName();
-                    if (displayName.equals(KAR98_DISPLAY_NAME) || displayName.equals(AK47_DISPLAY_NAME) || displayName.equals(AMMO762_DISPLAY_NAME) || displayName.equals(AMMOMAUSER_DISPLAY_NAME)) {
+                    if (displayName.equals(KAR98_DISPLAY_NAME) ||  displayName.equals(AMMOMAUSER_DISPLAY_NAME)) {
+                        //displayName.equals(AK47_DISPLAY_NAME) || displayName.equals(AMMO762_DISPLAY_NAME) ||
                         event.getInventory().setResult(new ItemStack(Material.AIR));
                         plugin.getLogger().info("Cancelled crafting involving factory block with display name: " + displayName);
                         break;
@@ -163,12 +164,12 @@ public class FactoryInteractListener implements Listener {
     private String getFactoryType(String displayName) {
         if (displayName.equals(KAR98_DISPLAY_NAME)) {
             return "Kar98";
-        } else if (displayName.equals(AK47_DISPLAY_NAME)) {
-            return "AK47";
+       // } else if (displayName.equals(AK47_DISPLAY_NAME)) {
+       //     return "AK47";
         } else if (displayName.equals(AMMOMAUSER_DISPLAY_NAME)) {
             return "Mauser";
-        } else if (displayName.equals(AMMO762_DISPLAY_NAME)) {
-            return "Ammo762";
+      //  } else if (displayName.equals(AMMO762_DISPLAY_NAME)) {
+        //    return "Ammo762";
         }
         return "";
     }
@@ -177,12 +178,12 @@ public class FactoryInteractListener implements Listener {
         switch (factoryType) {
             case "Kar98":
                 return Material.IRON_BLOCK;
-            case "AK47":
-                return Material.GOLD_BLOCK;
+         //   case "AK47":
+           //     return Material.GOLD_BLOCK;
             case "Mauser":
                 return Material.IRON_BLOCK;
-            case "Ammo762":
-                return Material.IRON_BLOCK;
+           // case "Ammo762":
+            //    return Material.IRON_BLOCK;
             default:
                 return Material.AIR;
         }

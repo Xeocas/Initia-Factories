@@ -49,7 +49,7 @@ public final class Factory extends JavaPlugin {
             public void run() {
                 factoryInteractListener.reapplyMetadata();
             }
-        }.runTaskTimer(this, 0L, 1200L);
+        }.runTaskTimer(this, 0L, 100L);
 
 
     }
